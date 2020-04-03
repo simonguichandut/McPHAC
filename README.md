@@ -20,4 +20,4 @@ input arguments, and for convenience these can be set in in the script
 > Each function is contained in a separate file named after that
 function, with the exception of 'McPHAC.c', which contains main().
 
-Plotting routines were added in `plot.py`. Explanations of the output files were added in `outinfo.txt`.
+Plotting routines were added in `plot.py`. Explanations of the output files were added in `OUTinfo.md`.
