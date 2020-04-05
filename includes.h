@@ -231,6 +231,8 @@ void      UpdateW(double**, double**, double**, double**, int);
 void      UpdateQ(double *, double **, double **, double *, int);
 void      Updateu(int, int, double**, double*, double**, column_type*, int);
 
+void     OutputRunParams();
+
 
 // External variables (should perhaps be phased out)
 double  *nu, *lognu, *dnu;

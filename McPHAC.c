@@ -50,6 +50,8 @@ int main( int argc, char *argv[] ) {
 		ANIST = atoi(argv[i]); i++;
 		MAXCOLTAU = atof(argv[i]); i++;
 		TGUESSBDYCOND = atof(argv[i]); i++;
+		OutputRunParams();
+		printf("Input parameters written in OUT/runparams");
 	}
 
 	// Allocate arrays

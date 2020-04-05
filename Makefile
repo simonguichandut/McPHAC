@@ -152,6 +152,7 @@ NSOBJS 	= $(OPAL)/OPALrho.o \
 	$(NS)/PrintInterpolT.o \
 	$(NS)/PrintOutTau.o \
 	$(NS)/PrintOutOpacities.o \
+	$(NS)/OutputRunParams.o \
 	$(NS)/McPHAC.o
 
 
