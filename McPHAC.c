@@ -51,7 +51,7 @@ int main( int argc, char *argv[] ) {
 		MAXCOLTAU = atof(argv[i]); i++;
 		TGUESSBDYCOND = atof(argv[i]); i++;
 		OutputRunParams();
-		printf("Input parameters written in OUT/runparams");
+		printf("Input parameters written in OUT/runparams\n");
 	}
 
 	// Allocate arrays

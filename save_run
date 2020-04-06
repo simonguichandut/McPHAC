@@ -1,0 +1,8 @@
+#!/bin/bash
+# Bash script to save main results from last run to target directory
+# ./save_run run_name
+
+rm -rf OUT/$1
+mkdir OUT/$1
+cp OUT/EmergentSpectrum* OUT/SurfaceFluxes.* OUT/TempProfile* OUT/$1 
+
