@@ -4,5 +4,5 @@
 
 rm -rf OUT/$1
 mkdir OUT/$1
-cp OUT/EmergentSpectrum* OUT/SurfaceFluxes.* OUT/TempProfile* OUT/$1 
+cp OUT/EmergentSpectrum* OUT/SurfaceFluxes.* OUT/TempProfile* OUT/tau.dat OUT/runparams OUT/$1 
 
