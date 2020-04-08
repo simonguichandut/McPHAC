@@ -4,19 +4,44 @@ import sys
 import os
 import subprocess
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.special import expn
 from scipy.integrate import quad
 
-# Physical constants (cgs)
-h = 6.626075e-27  # erg s
-kB = 1.381e-16     # erg K-1
-c = 2.998e10      # cm s-1
-me = 9.10939e-28  # g
+#--------------------------------- Plot settings ---------------------------------
+# from https://jwalton.info/Embed-Publication-Matplotlib-Latex/
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib import rc
+
+width_pt = 240 # MNRAS column width
+inches_per_pt = 1 / 72.27
+width_in = width_pt * inches_per_pt
+golden_ratio = (5**.5 - 1) / 2
+height_in = width_in * golden_ratio
+fig_dim = (width_in,height_in)
+
+fonts = {
+        "axes.labelsize": 10,
+        "font.size": 9,
+        "legend.fontsize": 6,
+        "xtick.labelsize": 7,
+        "ytick.labelsize": 7,
+        "mathtext.default": "regular"
+}
+mpl.rcParams.update(fonts)
+
+
+
+#------------------------------ Constants and basic functions ------------------------------
+
+# (cgs)
+h = 6.626075e-27  
+kB = 1.381e-16     
+c = 2.998e10     
 arad = 7.5657e-15
 sigma = 0.25*arad*c
-keV = 1.602177e-9 # 1000 erg
-
+keV = 1.602177e-9 
 
 def Bnu(nu,T):    # Planck function
     return 2*h*nu**3/c**2 * 1/(np.exp(h*nu/kB/T) - 1)
@@ -41,7 +66,6 @@ def run_McPHAC(logTeff=6.5,gsurf=2.43e14,logymin=-5.0,logymax=2.0,Ndepths=200,ma
     
     subprocess.call(["./McPHAC"]+[str(x) for x in(logTeff,gsurf,logymin,logymax,Ndepths,maxfactor,Ndepthsnu,maxfactornu,Nmu,Nfreq,maxfracTch,maxiter,anist,maxcoltau,Tguess)])
     
-
 #-------------------------------- Run info functions --------------------------------
 
 def get_path(run='current'):
@@ -68,7 +92,6 @@ def num_iterations(run='current'):
         file = file[:-5] + str(i) + '.dat'
     return i-1
 
-
 #------------------------------ Data file read functions -------------------------------
 
 def read_datfile(file,columns):
@@ -80,7 +103,6 @@ def read_datfile(file,columns):
             for i,c in enumerate(columns):
                 arr[i].append(eval(line.split()[c]))
     return (np.array(x) for x in arr)
-    
 
 def read_spectrum(run='current'):
     """Reads the (nu,Fnu) values from the last iteration SurfaceFluxes.dat file"""
@@ -109,13 +131,12 @@ def NormSpectrum(run='current',ax=None,show=True,color='k',ls='-',label=None):
 
     if ax==None:
         _,ax = plt.subplots(1,1)
-    ax.loglog(h*nu/kB/params['Teff'], nu*Fnu/sigma/params['Teff']**4,color=color,ls=ls,lw=0.8,label=label)
+    ax.loglog(h*nu/kB/params['Teff'], nu*Fnu/sigma/params['Teff']**4,color=color,ls=ls,lw=0.9,label=label)
     
     if show:
         plt.show()
     else:
         return ax
-
 
 def TempProfile(run='current',ax=None,show=True,color='k',ls='-',label=None):
     """Temperature (normalized to Teff) vs column depth plot"""
@@ -125,40 +146,51 @@ def TempProfile(run='current',ax=None,show=True,color='k',ls='-',label=None):
 
     if ax==None:
         _,ax = plt.subplots(1,1)
-    ax.loglog(y,T/params['Teff'],color=color,ls=ls,lw=0.8,label=label)
+    ax.loglog(y,T/params['Teff'],color=color,ls=ls,lw=0.9,label=label)
 
     if show:
         plt.show()
     else:
         return ax
 
-
-
-
 #-------------------------------- Specific plotting functions --------------------------------
 
-def Make_fig1(force_recalculate=False):
-    """ Figure 1 from Guichandut 2020. Same idea as fig 1 from Haakonsen et al. 2012 """
+def Make_fig12(force_recalculate=False):
+    """ Figures 1 & 2 from Guichandut 2020. """
 
-    # Create figure
-    fig,ax = plt.subplots(1,1)
-    ax.set_xlabel(r'$h\nu/kT_{eff}$',fontsize=14)
-    ax.set_ylabel(r'$\nu F_\nu/\sigma T_{eff}^4$',fontsize=14)
-    ax.set_xlim([0.1,100])
-    ax.set_ylim([0.001,1])
-    ax.tick_params(which='both',direction='in')
-    ax.yaxis.set_ticks_position('both')
-    ax.xaxis.set_ticks_position('both')
+    # Create figures
+    fig1,ax1 = plt.subplots(1,1,figsize=fig_dim)
+    ax1.set_xlabel(r'$h\nu/kT_{eff}$')
+    ax1.set_ylabel(r'$\nu F_\nu/\sigma T_{eff}^4$')
+    ax1.set_xlim([0.1,100])
+    ax1.set_ylim([0.001,1])
+    ax1.tick_params(which='both',direction='in')
+    ax1.yaxis.set_ticks_position('both')
+    ax1.xaxis.set_ticks_position('both')
+
+    fig2,ax2 = plt.subplots(1,1,figsize=fig_dim)
+    ax2.set_xlabel(r'$y$ (g cm$^{-2}$)')
+    ax2.set_ylabel(r'$T/T_{eff}$')
+    ax2.set_xlim([1e-6,10])
+    ax2.set_ylim([0.1,100])
+    ax2.tick_params(which='both',direction='in')
+    ax2.yaxis.set_ticks_position('both')
+
+    ax2b = ax2.twinx()
+    # ax2b.tick_params(colors='b')
+    ax2b.set_ylabel(r'$E_{\tau_\nu=1}$ (keV)',color='b')
+    ax2.tick_params(which='both',direction='in')
+    ax2b.set_ylim([1e-3,10])
     
     # Plot Planck function
     x = np.logspace(-1,2,200)
-    ax.loglog(x,Fnu_norm(x),'k-',label='BB',lw=0.8)
+    ax1.loglog(x,Fnu_norm(x),'k-',label='blackbody',lw=0.8)
     
     # Compile code
     subprocess.call(["make","McPHAC"])
 
     # Run code at different effective temperatures and save the runs
-    for logTeff, color in zip( (6.5,6.0,5.5), ('b','r','g') ):
+    for logTeff, ls in zip( (6.5,6.0,5.5), ('--','-.',':') ):
 
         run_name = ("run_logTeff_%.1f_g14_2.4"%logTeff)
 
@@ -166,14 +198,25 @@ def Make_fig1(force_recalculate=False):
         if os.path.exists("OUT/" + run_name) and (not force_recalculate):
             pass
         else:
-            run_McPHAC(logTeff=logTeff,gsurf=2.4e14)
+            run_McPHAC(logTeff=logTeff,gsurf=2.4e14,logymin=-7)
             subprocess.call(["./save_run", run_name])
 
         # Plot spectrum
-        NormSpectrum(run=run_name,ax=ax,show=False,color=color,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
+        NormSpectrum(run=run_name,ax=ax1,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
 
-    ax.legend(frameon=False,loc='best')
-    fig.savefig('figures/fig1.pdf')
+        # Plot temperature profile
+        TempProfile(run=run_name,ax=ax2,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
+
+        # Add tau=1 data
+        E,ytau1 = read_taufile(run=run_name)
+        ax2b.loglog(ytau1,E,color='b',ls=ls,lw=0.9)
+
+    ax1.legend(frameon=False,loc='best')
+    ax2.legend(frameon=False,loc=2)
+    fig1.tight_layout()
+    fig2.tight_layout()
+    fig1.savefig('figures/fig1.pdf', format='pdf', bbox_inches='tight')
+    fig2.savefig('figures/fig2.pdf', format='pdf', bbox_inches='tight')
 
 def Make_Haakonsenfig1():
     """ Recreates figure 1 from Haakonsen et al. 2012 """
@@ -202,7 +245,7 @@ def Make_Haakonsenfig1():
         NormSpectrum(ax=ax,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
 
     ax.legend(frameon=False,loc='best')
-    fig.savefig('figures/haakonsenfig1.pdf')
+    fig.savefig('figures/haakonsenfig1.pdf', format='pdf', bbox_inches='tight')
 
 
 def Make_Haakonsenfig2():
@@ -235,7 +278,7 @@ def Make_Haakonsenfig2():
         ax.semilogx(h*nu/keV, Fnu_aniso/Fnu_iso, color='k', ls=ls, lw=0.8, label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
 
     ax.legend(frameon=False,loc='best')
-    fig.savefig('figures/haakonsenfig2.pdf')
+    fig.savefig('figures/haakonsenfig2.pdf', format='pdf', bbox_inches='tight')
 
 
 
@@ -259,7 +302,7 @@ else:
 f = sys.argv[1]
 if f == 'NormSpectrum': NormSpectrum(run)
 elif f == 'TempProfile': TempProfile(run)
-elif f == 'Make_fig1': Make_fig1()
+elif f == 'Make_fig12': Make_fig12()
 elif f == 'Make_Haakonsenfig1': Make_Haakonsenfig1()
 elif f == 'Make_Haakonsenfig2': Make_Haakonsenfig2()
 
