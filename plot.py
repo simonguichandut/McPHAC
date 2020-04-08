@@ -22,11 +22,11 @@ height_in = width_in * golden_ratio
 fig_dim = (width_in,height_in)
 
 fonts = {
-        "axes.labelsize": 10,
-        "font.size": 9,
+        "axes.labelsize": 7,
+        "font.size": 7,
         "legend.fontsize": 6,
-        "xtick.labelsize": 7,
-        "ytick.labelsize": 7,
+        "xtick.labelsize": 6,
+        "ytick.labelsize": 6,
         "mathtext.default": "regular"
 }
 mpl.rcParams.update(fonts)
@@ -174,12 +174,12 @@ def Make_fig12(force_recalculate=False):
     ax2.set_xlim([1e-6,10])
     ax2.set_ylim([0.1,100])
     ax2.tick_params(which='both',direction='in')
-    ax2.yaxis.set_ticks_position('both')
+    ax2.xaxis.set_ticks_position('both')
 
     ax2b = ax2.twinx()
     # ax2b.tick_params(colors='b')
     ax2b.set_ylabel(r'$E_{\tau_\nu=1}$ (keV)',color='b')
-    ax2.tick_params(which='both',direction='in')
+    ax2b.tick_params(which='both',direction='in')
     ax2b.set_ylim([1e-3,10])
     
     # Plot Planck function
