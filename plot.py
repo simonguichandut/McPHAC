@@ -31,8 +31,6 @@ fonts = {
 }
 mpl.rcParams.update(fonts)
 
-
-
 #------------------------------ Constants and basic functions ------------------------------
 
 # (cgs)
@@ -123,16 +121,20 @@ def read_taufile(run='current'):
 
 #-------------------------------- General plotting functions --------------------------------
 
-def NormSpectrum(run='current',ax=None,show=True,color='k',ls='-',label=None):
-    """Normalized spectrum plot : nu*Fnu/sigmaTeff^4 vs hnu/kT. Option to pass axis handle as argument"""
+def Spectrum(run='current',normalized=False,ax=None,show=True,color='k',ls='-',lw=0.9,label=None):
+    """Atmosphere spectrum (hnu,Fnu). If normalized=True, plot nu*Fnu/sigmaTeff^4 vs hnu/kT."""
 
     params = load_params(run)
     nu,Fnu = read_spectrum(run)
 
     if ax==None:
         _,ax = plt.subplots(1,1)
-    ax.loglog(h*nu/kB/params['Teff'], nu*Fnu/sigma/params['Teff']**4,color=color,ls=ls,lw=0.9,label=label)
     
+    if normalized:
+        ax.loglog(h*nu/kB/params['Teff'], nu*Fnu/sigma/params['Teff']**4,color=color,ls=ls,lw=lw,label=label)
+    else:
+        ax.loglog(h*nu/keV, Fnu,color=color,ls=ls,lw=lw,label=label)
+
     if show:
         plt.show()
     else:
@@ -202,7 +204,7 @@ def Make_fig12(force_recalculate=False):
             subprocess.call(["./save_run", run_name])
 
         # Plot spectrum
-        NormSpectrum(run=run_name,ax=ax1,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
+        Spectrum(run=run_name,normalized=True,ax=ax1,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
 
         # Plot temperature profile
         TempProfile(run=run_name,ax=ax2,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
@@ -217,6 +219,49 @@ def Make_fig12(force_recalculate=False):
     fig2.tight_layout()
     fig1.savefig('figures/fig1.pdf', format='pdf', bbox_inches='tight')
     fig2.savefig('figures/fig2.pdf', format='pdf', bbox_inches='tight')
+
+def Make_fig3(force_recalculate=False):
+    """ Figure 3 from Guichandut 2020. """
+
+    # Create figures
+    fig3,ax3 = plt.subplots(1,1,figsize=fig_dim)
+    ax3.set_xlabel(r'$h\nu$ (keV)')
+    ax3.set_ylabel(r'$F_\nu$')
+    # ax1.set_xlim([0.1,100])
+    # ax1.set_ylim([0.001,1])
+    ax3.tick_params(which='both',direction='in')
+    ax3.yaxis.set_ticks_position('both')
+    ax3.xaxis.set_ticks_position('both')
+
+    # Compile code
+    subprocess.call(["make","McPHAC"])
+
+    # Run code at different surface gravities and save the runs
+    # def g14(M,R): print(6.6726e-08*2e33*M/(R*1e5)**2*(1-2*6.6726e-08*2e33*M/c**2/(R*1e5))**(-1/2)/1e14)
+    # M = 1.4 Msun, R=12 km -> g14 = 1.60
+    # M = 1.42 Msun, R=11 km -> g14 = 1.99
+    # M = 1.4 Msun, R=10 km -> g14 = 2.44
+    # for g14, ls in zip( (1.6,2.0,2.4), ('--','-.',':') ):
+    for g14, ls in zip( (1.0,3.5,6.0), ('--','-.',':') ):
+
+        run_name = ("run_logTeff_6.0_g14_%.1f"%g14)
+
+        # Don't run McPHAC if run is already saved (unless specified to do it anyway)
+        if os.path.exists("OUT/" + run_name) and (not force_recalculate):
+            pass
+        else:
+            run_McPHAC(logTeff=6.0,gsurf=g14*1e14,logymin=-7)
+            subprocess.call(["./save_run", run_name])
+
+        # Plot spectrum
+        Spectrum(run=run_name,ax=ax3,show=False,ls=ls,lw=0.7,label=(r'$g_{14}=%.1f$'%g14))
+
+    ax3.legend(frameon=False,loc='best')
+    # plt.show()
+    fig3.tight_layout()
+    fig3.savefig('figures/fig3.pdf', format='pdf', bbox_inches='tight')
+
+
 
 def Make_Haakonsenfig1():
     """ Recreates figure 1 from Haakonsen et al. 2012 """
@@ -242,7 +287,7 @@ def Make_Haakonsenfig1():
     # Special linestyles: https://matplotlib.org/3.1.0/gallery/lines_bars_and_markers/linestyles.html
     for logTeff, ls in zip( (6.5,6.2,5.9,5.6,5.3), ('--',(0,(5,10)),':','-.',(0,(3,5,1,5))) ):
         run_McPHAC(logTeff=logTeff)
-        NormSpectrum(ax=ax,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
+        Spectrum(normalized=True,ax=ax,show=False,ls=ls,label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
 
     ax.legend(frameon=False,loc='best')
     fig.savefig('figures/haakonsenfig1.pdf', format='pdf', bbox_inches='tight')
@@ -300,9 +345,10 @@ else:
     run = sys.argv[2]
 
 f = sys.argv[1]
-if f == 'NormSpectrum': NormSpectrum(run)
+if f == 'Spectrum': Spectrum(run)
 elif f == 'TempProfile': TempProfile(run)
 elif f == 'Make_fig12': Make_fig12()
+elif f == 'Make_fig3': Make_fig3()
 elif f == 'Make_Haakonsenfig1': Make_Haakonsenfig1()
 elif f == 'Make_Haakonsenfig2': Make_Haakonsenfig2()
 
