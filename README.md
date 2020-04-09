@@ -21,3 +21,9 @@ input arguments, and for convenience these can be set in in the script
 function, with the exception of 'McPHAC.c', which contains main().
 
 Plotting routines were added in `plot.py`. Explanations of the output files were added in `OUTinfo.md`.
+
+> python plot.py Make_figures
+
+![](/figures/fig1.png)
+![](/figures/fig2.png)
+![](/figures/fig3.png) 

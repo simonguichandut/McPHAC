@@ -44,17 +44,17 @@ keV = 1.602177e-9
 def Bnu(nu,T):    # Planck function
     return 2*h*nu**3/c**2 * 1/(np.exp(h*nu/kB/T) - 1)
 
-def Fnu(nu,T):    # Flux coming out of isothermal atmosphere
+def Fnu_planck(nu,T):    # Flux coming out of isothermal atmosphere
     F = []
     for nui in nu:
         integrand = lambda t: Bnu(nui,T)*expn(2,t)
         F.append(2*np.pi*quad(integrand,0,np.inf)[0])
-    return F
+    return np.array(F)
 
 def Fnu_norm(x):    # Normalized (x=hnu/kT)
     T = 1
     nu = kB*T*x/h
-    return nu*Fnu(nu,T)/sigma/T**4
+    return nu*Fnu_planck(nu,T)/sigma/T**4
 
 def run_McPHAC(logTeff=6.5,gsurf=2.43e14,logymin=-5.0,logymax=2.0,Ndepths=200,maxfactor=1,
             Ndepthsnu=200,maxfactornu=1,Nmu=10,Nfreq=100,maxfracTch=0.0001,maxiter=20,
@@ -219,19 +219,43 @@ def Make_fig12(force_recalculate=False):
     fig2.tight_layout()
     fig1.savefig('figures/fig1.pdf', format='pdf', bbox_inches='tight')
     fig2.savefig('figures/fig2.pdf', format='pdf', bbox_inches='tight')
+    fig1.savefig('figures/fig1.png', format='png', bbox_inches='tight')
+    fig2.savefig('figures/fig2.png', format='png', bbox_inches='tight')
+
 
 def Make_fig3(force_recalculate=False):
-    """ Figure 3 from Guichandut 2020. """
+    """ Figure 3 from Guichandut 2020 is Counts/s/keV spectrum """
+
+    RNS = 1e6 # 10 km ns radius
+    d = 1e4*3e18 # 10 kpc distance
+    a = 1e2 # 1 m detector size
+    
+    # Convert Fnu units (erg/s/cm2/Hz) to Counts/s/keV at the detector
+    def convert_units(nu,Fnu):
+        return Fnu * (RNS/d*a)**2 * (h*nu)**(-1) * keV/h
 
     # Create figures
     fig3,ax3 = plt.subplots(1,1,figsize=fig_dim)
+    #fig3,ax3 = plt.subplots(1,1)
     ax3.set_xlabel(r'$h\nu$ (keV)')
-    ax3.set_ylabel(r'$F_\nu$')
-    # ax1.set_xlim([0.1,100])
-    # ax1.set_ylim([0.001,1])
+    ax3.set_ylabel(r'Counts s$^{-1}$ keV$^{-1}$')
+    ax3.set_xlim([0.01,10])
+    ax3.set_ylim([1e-8,2])
+    #ax3.set_ylim([1e-4,200])
     ax3.tick_params(which='both',direction='in')
     ax3.yaxis.set_ticks_position('both')
     ax3.xaxis.set_ticks_position('both')
+
+    # Plot a blackbody at the fitted temperature
+    # logTfit = 6.2
+    # hnu = np.linspace(0.01,10,100)*keV
+    # counts_per_kev = convert_units(hnu/h, Fnu_planck(hnu/h, T=10**logTfit)) 
+    # plt.loglog(hnu/keV, counts_per_kev, lw=0.7,color='b',label=('$T_{BB,fit}=10^{%.1f}$K'%logTfit))
+#    for logTfit in (6,6.2,6.4,6.6,6.8):
+#        hnu = np.linspace(0.01,10,1000)*keV
+#        counts_per_kev = convert_units(hnu/h, Fnu_planck(hnu/h, T=10**logTfit)) 
+#        plt.loglog(hnu/keV, counts_per_kev, lw=0.7,label=('$T_{BB,fit}=10^{%.1f}$K'%logTfit))
+
 
     # Compile code
     subprocess.call(["make","McPHAC"])
@@ -253,13 +277,17 @@ def Make_fig3(force_recalculate=False):
             run_McPHAC(logTeff=6.0,gsurf=g14*1e14,logymin=-7)
             subprocess.call(["./save_run", run_name])
 
-        # Plot spectrum
-        Spectrum(run=run_name,ax=ax3,show=False,ls=ls,lw=0.7,label=(r'$g_{14}=%.1f$'%g14))
+        # Plot counts spectrum
+        nu,Fnu = read_spectrum(run=run_name)
+        counts_per_kev = convert_units(nu,Fnu)
+        ax3.loglog(h*nu/keV, counts_per_kev,ls=ls,lw=0.7,color='k',label=(r'$g_{14}=%.1f$'%g14))
+        # Spectrum(run=run_name,ax=ax3,show=False,ls=ls,lw=0.7,label=(r'$g_{14}=%.1f$'%g14))
 
     ax3.legend(frameon=False,loc='best')
-    # plt.show()
     fig3.tight_layout()
+    #plt.show()
     fig3.savefig('figures/fig3.pdf', format='pdf', bbox_inches='tight')
+    fig3.savefig('figures/fig3.png', format='png', bbox_inches='tight')
 
 
 
@@ -351,9 +379,6 @@ elif f == 'Make_fig12': Make_fig12()
 elif f == 'Make_fig3': Make_fig3()
 elif f == 'Make_Haakonsenfig1': Make_Haakonsenfig1()
 elif f == 'Make_Haakonsenfig2': Make_Haakonsenfig2()
-
-
-
-
-
-
+elif f == 'Make_figures':
+    Make_fig12()
+    Make_fig3()
