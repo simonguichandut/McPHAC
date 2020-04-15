@@ -14,7 +14,25 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
-width_pt = 240 # MNRAS column width
+# # Small version
+# width_pt = 240 # MNRAS column width
+# inches_per_pt = 1 / 72.27
+# width_in = width_pt * inches_per_pt
+# golden_ratio = (5**.5 - 1) / 2
+# height_in = width_in * golden_ratio
+# fig_dim = (width_in,height_in)
+# 
+# fonts = {
+#         "axes.labelsize": 7,
+#         "font.size": 7,
+#         "legend.fontsize": 6,
+#         "xtick.labelsize": 6,
+#         "ytick.labelsize": 6,
+#         "mathtext.default": "regular"
+# }
+
+# Big version
+width_pt = 504 # MNRAS text width
 inches_per_pt = 1 / 72.27
 width_in = width_pt * inches_per_pt
 golden_ratio = (5**.5 - 1) / 2
@@ -22,15 +40,14 @@ height_in = width_in * golden_ratio
 fig_dim = (width_in,height_in)
 
 fonts = {
-        "axes.labelsize": 7,
-        "font.size": 7,
-        "legend.fontsize": 6,
-        "xtick.labelsize": 6,
-        "ytick.labelsize": 6,
+        "axes.labelsize": 12,
+        "font.size": 12,
+        "legend.fontsize": 11,
+        "xtick.labelsize": 11,
+        "ytick.labelsize": 11,
         "mathtext.default": "regular"
 }
 mpl.rcParams.update(fonts)
-
 #------------------------------ Constants and basic functions ------------------------------
 
 # (cgs)
