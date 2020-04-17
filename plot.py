@@ -308,6 +308,48 @@ def Make_fig3(force_recalculate=False):
 
 
 
+def Make_fig4(force_recalculate=False):
+    """ Figure 4 from Guichandut 2020 """
+
+    # Create figures
+    fig4,ax4 = plt.subplots(1,1,figsize=fig_dim)
+    # fig4,ax4 = plt.subplots(1,1)
+    ax4.set_xlabel(r'$h\nu$ (keV)')
+    ax4.set_ylabel(r'$F_{\nu,aniso}/F_{\nu,iso}$')
+    # ax4.set_xlim([0.01,10])
+    ax4.tick_params(which='both',direction='in')
+    ax4.yaxis.set_ticks_position('both')
+    ax4.xaxis.set_ticks_position('both')
+
+    # Compile code
+    subprocess.call(["make","McPHAC"])
+
+    # Run code
+    for logTeff, ls in zip( (6.5,6.0,5.5), ('--','-.',':')):
+
+        run_name = ("run_logTeff_%.1f_g14_2.4"%logTeff)
+
+        if os.path.exists("OUT/" + run_name + '_iso') and (not force_recalculate):
+            pass
+        else:
+            run_McPHAC(logTeff=logTeff,anist=0,logymin=-7)
+            subprocess.call(["./save_run", run_name + '_iso'])
+            run_McPHAC(logTeff=logTeff,anist=1,logymin=-7)
+            subprocess.call(["./save_run", run_name + '_aniso'])
+
+        # Plot
+        nu,Fnu_iso = read_spectrum(run_name+'_iso')
+        nu,Fnu_aniso = read_spectrum(run_name+'_aniso')
+        ax4.semilogx(h*nu/keV, Fnu_aniso/Fnu_iso, color='k', ls=ls, lw=0.8, label=(r'$T_{eff}=10^{%.1f}$K'%logTeff))
+
+    ax4.legend(frameon=False,loc='best')
+    fig4.tight_layout()
+    # plt.show()
+    fig4.savefig('figures/fig4.pdf', format='pdf', bbox_inches='tight')
+    fig4.savefig('figures/fig4.png', format='png', bbox_inches='tight')
+
+
+
 def Make_Haakonsenfig1():
     """ Recreates figure 1 from Haakonsen et al. 2012 """
 
@@ -377,8 +419,6 @@ def Make_Haakonsenfig2():
 
 
 
-
-
 ## Command-line call
 # Argument parsing : first arg (mandatory) is plotting function to run, second arg (optionnal) name of saved run
 msg = "Command line call : $python3 plot.py [function_name] [run_name]"
@@ -394,8 +434,10 @@ if f == 'Spectrum': Spectrum(run)
 elif f == 'TempProfile': TempProfile(run)
 elif f == 'Make_fig12': Make_fig12()
 elif f == 'Make_fig3': Make_fig3()
+elif f == 'Make_fig4': Make_fig4()
 elif f == 'Make_Haakonsenfig1': Make_Haakonsenfig1()
 elif f == 'Make_Haakonsenfig2': Make_Haakonsenfig2()
 elif f == 'Make_figures':
     Make_fig12()
     Make_fig3()
+    Make_fig4()
