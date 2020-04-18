@@ -5,7 +5,7 @@
 This is my submission for the computationnal project. I use McPHAC ([Haakonsen et al. 2012](https://ui.adsabs.harvard.edu/abs/2012ApJ...749...52H/abstract)) 
 to compute neutron star atmosphere spectra with different parameters and conditions, and analyze the results in a paper (Guichandut2020.pdf).
 
-This (private) repository is a clone of the original McPHAC repository ([link](https://github.com/McPHAC/McPHAC)). No changes were made to the source code.
+This repository is a clone of the original McPHAC repository ([link](https://github.com/McPHAC/McPHAC)). No changes were made to the source code.
 
 This is the original readme: 
 
