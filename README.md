@@ -3,7 +3,7 @@
 ### Course website : https://www.physics.mcgill.ca/~cumming/teaching/642/
 
 This is my submission for the computationnal project. I use McPHAC ([Haakonsen et al. 2012](https://ui.adsabs.harvard.edu/abs/2012ApJ...749...52H/abstract)) 
-to compute neutron star atmosphere spectra with different parameters and conditions, and analyze the results in a paper.
+to compute neutron star atmosphere spectra with different parameters and conditions, and analyze the results in a paper (Guichandut2020.pdf).
 
 This (private) repository is a clone of the original McPHAC repository ([link](https://github.com/McPHAC/McPHAC)). No changes were made to the source code.
 
@@ -29,3 +29,5 @@ Plotting routines were added in `plot.py`. Explanations of the output files were
 ![](/figures/fig2.png)
 
 ![](/figures/fig3.png) 
+
+![](/figures/fig4.png) 
